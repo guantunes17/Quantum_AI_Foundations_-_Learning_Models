@@ -1,0 +1,22 @@
+# Ambiente virtual
+.venv/
+
+# Cache do Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Dados gerados: ignoramos tudo em data/, MENOS os dois arquivos necessarios
+# para usar o modelo ja treinado sem precisar re-treinar.
+data/*
+!data/vocab_to_int.json
+!data/meta_lstm.json
+
+# Modelos: versionamos so a LSTM treinada. O word2vec.model (59 MB) nao e
+# preciso para inferencia (os vetores ja estao dentro do lstm.pt).
+models/*
+!models/lstm.pt
+
+# Figuras: versionamos as imagens usadas no documento.
+figures/*
+!figures/*.png

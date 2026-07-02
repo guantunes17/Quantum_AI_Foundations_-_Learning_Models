@@ -87,8 +87,9 @@ No dashboard fica visível:
 - a matriz de confusão da LSTM;
 - uma tabela comparando a LSTM com o baseline TF-IDF + SVM.
 
-As curvas de treino vs. validação deixam visível o overfitting a partir da 2ª
-época — comportamento que este projeto já documenta nos comentários do treino.
+As curvas de treino vs. validação deixam visível o overfitting a partir da 4ª
+época (o melhor checkpoint fica na 3ª) — comportamento que este projeto já
+documenta nos comentários do treino.
 
 ## Estrutura
 

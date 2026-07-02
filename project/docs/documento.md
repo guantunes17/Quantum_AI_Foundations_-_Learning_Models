@@ -95,6 +95,9 @@ O projeto está organizado em etapas numeradas, cada uma um script Python:
    Treinada com perda **BCELoss**, otimizador **Adam** (lr = 0,001), 4 épocas,
    lotes de 128 e *gradient clipping*; 10% do treino são reservados para
    **validação**, e guardamos o **melhor modelo** (menor perda de validação) via *checkpoint*.
+   O treino e a avaliação são rastreados com o **Weights & Biases**: hiperparâmetros,
+   curvas de perda de treino vs. validação por época e as métricas finais ficam
+   registrados no dashboard.
 5. **Avaliação** — mede acurácia, precisão, recall, F1 e a matriz de confusão no
    conjunto de teste (10 mil reviews nunca vistas).
 6. **Inferência** — dada uma review nova, devolve a probabilidade de ser positiva.
@@ -112,18 +115,20 @@ Comparação no conjunto de teste (10.000 reviews):
 
 | Modelo | Acurácia | Precisão | Recall | F1 |
 |---|---|---|---|---|
-| TF-IDF + SVM (baseline) | 0,8858 | 0,886 | 0,886 | 0,886 |
-| **LSTM (word2vec)** | 0,8949 | 0,895 | 0,895 | 0,895 |
+| TF-IDF + SVM (baseline) | 0,8849 | 0,8851 | 0,8849 | 0,8849 |
+| **LSTM (word2vec)** | 0,9004 | 0,9004 | 0,9004 | 0,9004 |
 
-A LSTM superou o baseline clássico, ainda que por uma margem pequena (cerca de 1
-ponto de acurácia). Em um benchmark grande, balanceado e relativamente fácil como
+A LSTM superou o baseline clássico, ainda que por uma margem pequena (cerca de 1,5
+pontos de acurácia). Em um benchmark grande, balanceado e relativamente fácil como
 este, o TF-IDF + SVM já é um adversário forte; mesmo assim, a rede sequencial
 entrega o melhor resultado e, sobretudo, captura o **contexto** das palavras —
 vantagem que tende a crescer em casos mais difíceis (negação, ironia, frases
-longas). Um detalhe importante do treino: a LSTM atingiu seu melhor ponto já na
-2ª época; depois disso, a perda de treino continuou caindo enquanto a de validação
+longas). Um detalhe importante do treino: a LSTM atingiu seu melhor ponto na
+3ª época; depois disso, a perda de treino continuou caindo enquanto a de validação
 voltou a subir — sinal clássico de **overfitting**. Por isso guardamos o melhor
 modelo (menor perda de validação) via *checkpoint*, em vez do modelo da última época.
+As curvas registradas no W&B tornam esse ponto de virada visível a olho e
+fundamentam a escolha do checkpoint.
 
 Matriz de confusão da LSTM:
 
@@ -132,11 +137,11 @@ Matriz de confusão da LSTM:
 Exemplos de inferência em frases novas:
 
 ```
-[POSITIVO] p=0.989  "This product is amazing, exactly what I needed. Highly recommend!"
-[NEGATIVO] p=0.007  "Terrible quality, it broke after one day. Complete waste of money."
-[POSITIVO] p=0.980  "Absolutely love it, best purchase I have made this year."
-[NEGATIVO] p=0.019  "Worst customer service ever, I will never buy here again."
-[POSITIVO] p=0.730  "It works fine, nothing special but it does the job."
+[POSITIVO] p=0.994  "This product is amazing, exactly what I needed. Highly recommend!"
+[NEGATIVO] p=0.003  "Terrible quality, it broke after one day. Complete waste of money."
+[POSITIVO] p=0.987  "Absolutely love it, best purchase I have made this year."
+[NEGATIVO] p=0.009  "Worst customer service ever, I will never buy here again."
+[POSITIVO] p=0.669  "It works fine, nothing special but it does the job."
 ```
 
 ### 3.4. Como o resultado é consumido

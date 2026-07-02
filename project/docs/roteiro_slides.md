@@ -86,22 +86,25 @@ um termômetro automático de satisfação".
 ## Slide 9 — Resultados
 | Modelo | Acurácia | F1 |
 |---|---|---|
-| TF-IDF + SVM (baseline) | 0,886 | 0,886 |
-| **LSTM (word2vec)** | 0,895 | 0,895 |
+| TF-IDF + SVM (baseline) | 0,885 | 0,885 |
+| **LSTM (word2vec)** | 0,900 | 0,900 |
 
 - Matriz de confusão da LSTM (figura `figures/matriz_confusao_lstm.png`)
+- Treino e avaliação rastreados no **Weights & Biases** (hiperparâmetros, curvas
+  de perda por época, métricas finais)
 
-*Notas:* a LSTM (89,5%) supera o baseline SVM (88,6%). Reforçar que o melhor
-modelo foi salvo via *checkpoint* na 2ª época — depois disso a validação piora
-(overfitting). Mostrar a matriz de confusão (acertos na diagonal).
+*Notas:* a LSTM (90,0%) supera o baseline SVM (88,5%). Reforçar que o melhor
+modelo foi salvo via *checkpoint* na 3ª época — depois disso a validação piora
+(overfitting); as curvas do W&B deixam esse ponto visível. Mostrar a matriz de
+confusão (acertos na diagonal).
 
 ---
 
 ## Slide 10 — Demo: classificando reviews novas
 ```
 [POSITIVO] p=0.99  "This product is amazing, exactly what I needed..."
-[NEGATIVO] p=0.01  "Terrible quality, it broke after one day..."
-[POSITIVO] p=0.73  "It works fine, nothing special but it does the job."
+[NEGATIVO] p=0.00  "Terrible quality, it broke after one day..."
+[POSITIVO] p=0.67  "It works fine, nothing special but it does the job."
 ```
 - O modelo devolve **rótulo + probabilidade** para qualquer texto novo
 

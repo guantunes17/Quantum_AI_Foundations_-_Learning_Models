@@ -17,6 +17,7 @@ import json
 import numpy as np
 import torch
 import torch.nn as nn
+import wandb
 from torch.utils.data import TensorDataset, DataLoader
 
 from utils import DIR_DADOS, DIR_MODELOS, garantir_pastas
@@ -53,6 +54,27 @@ def main():
     vocab_size = meta["vocab_size"]
     seq_length = meta["seq_length"]
     print(f"\n[1/4] Treino={X_tr.shape}  Validacao={X_val.shape}  vocab_size={vocab_size}")
+
+    # --- W&B: uma run por treino, sempre ligada (exige `wandb login` previo) ---
+    # Logamos como config tanto os hiperparametros fixos no topo do script quanto
+    # os que so existem depois de ler o meta.json (vocab_size, seq_length).
+    run = wandb.init(
+        project="quantum-commerce-sentimento",
+        job_type="treino",
+        config={
+            "embedding_dim": EMBEDDING_DIM,
+            "hidden_dim": HIDDEN_DIM,
+            "n_layers": N_LAYERS,
+            "drop_prob": DROP_PROB,
+            "batch_size": BATCH_SIZE,
+            "epocas": EPOCAS,
+            "lr": LR,
+            "clip": CLIP,
+            "semente": SEMENTE,
+            "vocab_size": vocab_size,
+            "seq_length": seq_length,
+        },
+    )
 
     # --- 2) Matriz de embedding word2vec (etapa 4), se existir ---
     caminho_emb = DIR_DADOS / "embedding_matrix.npy"
@@ -99,6 +121,8 @@ def main():
             nn.utils.clip_grad_norm_(modelo.parameters(), CLIP)
             otimizador.step()                                 # ajusta os pesos
             perdas.append(perda.item())
+            # Curva granular por lote (alem da media por epoca logada mais abaixo).
+            wandb.log({"perda_treino_lote": perda.item()})
             if i % 100 == 0 or i == n_lotes:
                 print(f"   epoca {epoca} | lote {i:>4}/{n_lotes} | perda media {np.mean(perdas):.4f}")
 
@@ -114,7 +138,16 @@ def main():
                 total += len(yb)
         perda_val = float(np.mean(v_perdas))
         acc_val = acertos / total
+        perda_treino_media = float(np.mean(perdas))
         print(f"   >>> fim epoca {epoca}: perda_val={perda_val:.4f} | acuracia_val={acc_val:.4f}")
+
+        # Curva por epoca: treino vs validacao (o campo "epoca" serve de eixo x no dashboard).
+        wandb.log({
+            "epoca": epoca,
+            "perda_treino": perda_treino_media,
+            "perda_val": perda_val,
+            "acuracia_val": acc_val,
+        })
 
         # CHECKPOINT do MELHOR modelo (o de menor perda de validacao).
         # Repare nos logs: a perda de TREINO cai sempre, mas a de VALIDACAO
@@ -139,6 +172,12 @@ def main():
     print(f"   Melhor modelo: epoca {melhor_epoca} (perda_val={melhor_val:.4f})")
     print(f"   Modelo salvo em: {DIR_MODELOS / 'lstm.pt'}")
     print("\n   >>> Proximo passo:  python 06_avaliacao.py")
+
+    # Resumo da run: melhor epoca e melhor perda de validacao (ficam fixos no
+    # painel da run, mesmo com varios wandb.log ao longo do treino).
+    run.summary["melhor_epoca"] = melhor_epoca
+    run.summary["melhor_perda_val"] = melhor_val
+    wandb.finish()
 
 
 if __name__ == "__main__":

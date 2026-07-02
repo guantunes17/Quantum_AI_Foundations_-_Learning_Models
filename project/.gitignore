@@ -6,6 +6,9 @@ __pycache__/
 *.pyc
 *.pyo
 
+# Logs locais de runs do W&B (o historico fica sincronizado no dashboard)
+wandb/
+
 # Dados gerados: ignoramos tudo em data/, MENOS os dois arquivos necessarios
 # para usar o modelo ja treinado sem precisar re-treinar.
 data/*

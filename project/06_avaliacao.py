@@ -17,6 +17,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
+import wandb
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 from utils import DIR_DADOS, DIR_MODELOS, DIR_FIGURAS, garantir_pastas
@@ -28,6 +29,13 @@ def main():
     print("=" * 70)
     print("ETAPA 6 - AVALIACAO DA LSTM NO TESTE")
     print("=" * 70)
+
+    # --- W&B: run propria para a avaliacao, no mesmo projeto do treino ---
+    wandb.init(
+        project="quantum-commerce-sentimento",
+        job_type="avaliacao",
+        tags=["eval"],
+    )
 
     # --- 1) Recria o modelo com os mesmos hiperparametros e carrega os pesos ---
     X_te = np.load(DIR_DADOS / "test_x.npy")
@@ -80,6 +88,27 @@ def main():
     with open(DIR_DADOS / "metricas_lstm.json", "w", encoding="utf-8") as f:
         json.dump(metricas_lstm, f, indent=2, ensure_ascii=False)
 
+    # --- W&B: metricas finais de teste + matriz de confusao ---
+    wandb.log({
+        "teste_acuracia": metricas_lstm["acuracia"],
+        "teste_precisao_macro": metricas_lstm["precisao_macro"],
+        "teste_recall_macro": metricas_lstm["recall_macro"],
+        "teste_f1_macro": metricas_lstm["f1_macro"],
+    })
+    try:
+        # Grafico nativo do W&B: interativo, com contagens por celula no dashboard.
+        wandb.log({
+            "matriz_confusao": wandb.plot.confusion_matrix(
+                y_true=y_te.tolist(),
+                preds=y_pred.tolist(),
+                class_names=["negativo", "positivo"],
+            )
+        })
+    except Exception as e:
+        # Fallback: loga a figura PNG que ja foi gerada acima.
+        print(f"   (wandb.plot.confusion_matrix falhou: {e}; usando a figura PNG como fallback)")
+        wandb.log({"matriz_confusao": wandb.Image(str(caminho_fig))})
+
     # --- 3) Comparacao com o baseline (etapa 2) ---
     print("\n[3/3] Comparacao final (teste):")
     caminho_base = DIR_DADOS / "metricas_baseline.json"
@@ -93,6 +122,16 @@ def main():
         print(f"   {m['modelo']:<22}{m['acuracia']:>10}{m['precisao_macro']:>10}"
               f"{m['recall_macro']:>10}{m['f1_macro']:>8}")
     print("\n   >>> Proximo passo:  python 07_inferencia.py")
+
+    # --- W&B: tabela comparando LSTM vs baseline SVM (se o baseline existir) ---
+    tabela_comparacao = wandb.Table(
+        columns=["modelo", "acuracia", "precisao_macro", "recall_macro", "f1_macro"],
+        data=[[m["modelo"], m["acuracia"], m["precisao_macro"], m["recall_macro"], m["f1_macro"]]
+              for m in linhas],
+    )
+    wandb.log({"comparacao_lstm_vs_baseline": tabela_comparacao})
+
+    wandb.finish()
 
 
 if __name__ == "__main__":

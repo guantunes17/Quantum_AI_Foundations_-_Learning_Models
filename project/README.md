@@ -23,6 +23,14 @@ pip install -r requirements.txt
 python -m nltk.downloader stopwords punkt punkt_tab
 ```
 
+O `wandb` (Weights & Biases) já está no `requirements.txt` — é usado para rastrear os
+experimentos de treino/avaliação (veja a seção [Rastreamento de experimentos com W&B](#rastreamento-de-experimentos-com-wb)).
+Antes de treinar, faça login uma única vez:
+
+```bash
+wandb login
+```
+
 ## Como rodar
 
 Os scripts são numerados e devem ser executados em ordem. Cada um imprime o que
@@ -62,6 +70,25 @@ python 07_inferencia.py -i      # modo interativo: digite reviews uma a uma
 | `07_inferencia.py` | Classifica avaliações novas. |
 
 Arquivos auxiliares: `utils.py` (funções comuns) e `modelo_lstm.py` (definição da rede).
+
+## Rastreamento de experimentos com W&B
+
+Os scripts `05_treino_lstm.py` (treino) e `06_avaliacao.py` (avaliação) registram
+métricas automaticamente no [Weights & Biases](https://wandb.ai), no projeto
+`quantum-commerce-sentimento`. Não há flag para desligar — rodar o treino sempre
+gera uma run (por isso o `wandb login` prévio é necessário).
+
+No dashboard fica visível:
+
+- curvas de perda de treino vs. validação por época (e perda de treino por lote,
+  para uma visão mais granular);
+- acurácia de validação por época;
+- métricas finais no conjunto de teste (acurácia, precisão, recall e F1 macro);
+- a matriz de confusão da LSTM;
+- uma tabela comparando a LSTM com o baseline TF-IDF + SVM.
+
+As curvas de treino vs. validação deixam visível o overfitting a partir da 2ª
+época — comportamento que este projeto já documenta nos comentários do treino.
 
 ## Estrutura
 

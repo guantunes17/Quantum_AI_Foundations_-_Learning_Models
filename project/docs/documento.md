@@ -2,7 +2,7 @@
 
 **Disciplina:** AI Foundation and Learning Models — FIAP MBA (turma 1AIER)
 **Desafio escolhido:** Análise de sentimento em reviews
-**Integrantes:** _________________________________
+**Integrantes:** RM 375003, RM 375270, RM 373262, RM 370192
 
 ---
 
@@ -90,14 +90,15 @@ O projeto está organizado em etapas numeradas, cada uma um script Python:
    esses vetores **inicializam** a camada de embedding da rede.
 4. **Treino da LSTM** — a arquitetura é:
 
-   `Embedding(vocabulário, 200) → LSTM(hidden=128, 2 camadas, dropout=0.5) → Dropout(0.3) → Linear(128→1) → Sigmoide`
+    `Embedding(vocabulário, 200) → LSTM(hidden=128, 2 camadas, dropout=0.5) → Dropout(0.3) → Linear(128→1) → Sigmoide`
 
-   Treinada com perda **BCELoss**, otimizador **Adam** (lr = 0,001), 4 épocas,
-   lotes de 128 e *gradient clipping*; 10% do treino são reservados para
-   **validação**, e guardamos o **melhor modelo** (menor perda de validação) via *checkpoint*.
-   O treino e a avaliação são rastreados com o **Weights & Biases**: hiperparâmetros,
-   curvas de perda de treino vs. validação por época e as métricas finais ficam
-   registrados no dashboard.
+    Treinada com perda **BCELoss**, otimizador **Adam** (lr = 0,001), 4 épocas,
+    lotes de 128 e *gradient clipping*; 10% do treino são reservados para
+    **validação**, e guardamos o **melhor modelo** (menor perda de validação) via *checkpoint*.
+    O treino e a avaliação são rastreados com o **Weights & Biases**: hiperparâmetros,
+    curvas de perda de treino vs. validação por época e as métricas finais ficam
+    registrados no dashboard.
+
 5. **Avaliação** — mede acurácia, precisão, recall, F1 e a matriz de confusão no
    conjunto de teste (10 mil reviews nunca vistas).
 6. **Inferência** — dada uma review nova, devolve a probabilidade de ser positiva.
@@ -164,8 +165,8 @@ curadoria de catálogo com um sinal que hoje está "preso" no texto das reviews.
 
 - **Idioma:** o modelo foi treinado em inglês. Para o português, é preciso treinar
   com dados e embeddings em pt-BR.
-- **Binário:** classifica apenas positivo/negativo; reviews neutras (nota 3 foram
-  excluídas do dataset) e ironia continuam difíceis.
+- **Binário:** classifica apenas positivo/negativo; reviews neutras (nota 3, que
+  foi excluída do dataset) e ironia continuam difíceis.
 - **Mudança de domínio:** reviews da Amazon não são idênticas às da Quantum
   Commerce; em produção, o modelo deve ser re-treinado com dados próprios.
 - **Vocabulário fixo:** palavras novas (gírias, produtos lançados) viram
